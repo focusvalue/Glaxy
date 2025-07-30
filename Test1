@@ -1,0 +1,52 @@
+import streamlit as st
+import random
+import os
+from gtts import gTTS
+from moviepy.editor import *
+from PIL import Image, ImageDraw, ImageFont
+
+# -- Title --
+st.set_page_config(page_title="Glaxy AI Video Generator", layout="centered")
+st.title("🚀 Glaxy: AI Video Generator (Prototype)")
+
+# -- Input --
+script = st.text_area("Enter your script or topic:", "Top 5 AI tools changing the world")
+voice = st.selectbox("Choose voice style:", ["American Male", "American Female", "Robotic Male", "Natural Female"])
+
+if st.button("Generate Video"):
+    with st.spinner("Creating video... This may take a few seconds."):
+
+        # -- Step 1: Text to Speech --
+        tts = gTTS(script, lang='en')
+        audio_file = "audio.mp3"
+        tts.save(audio_file)
+
+        # -- Step 2: Generate Backgrounds (placeholder visuals) --
+        img = Image.new('RGB', (1280, 720), color=(random.randint(100,255), random.randint(100,255), random.randint(100,255)))
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype("arial.ttf", 60)
+        draw.text((100, 300), script[:100] + '...', fill=(0,0,0), font=font)
+        img_path = "slide.jpg"
+        img.save(img_path)
+
+        # -- Step 3: Create Video Clip --
+        audio = AudioFileClip(audio_file)
+        duration = audio.duration
+        image_clip = ImageClip(img_path).set_duration(duration)
+        image_clip = image_clip.set_audio(audio)
+        image_clip = image_clip.set_fps(24)
+
+        final_video = image_clip
+        final_path = "glaxy_video.mp4"
+        final_video.write_videofile(final_path, codec="libx264")
+
+        st.video(final_path)
+        with open(final_path, "rb") as f:
+            st.download_button("⬇️ Download Your Video", f, file_name="glaxy_video.mp4")
+
+        os.remove(audio_file)
+        os.remove(img_path)
+        os.remove(final_path)
+
+st.markdown("---")
+st.markdown("👨‍💻 Prototype created by Glaxy AI | 100% AI-Generated")
